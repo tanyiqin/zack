@@ -1,4 +1,4 @@
-module zack
+module github.com/tanyiqin/zack
 
 go 1.15
 
