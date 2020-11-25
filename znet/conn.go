@@ -58,6 +58,7 @@ func NewConnection(server IServer, conn net.Conn, connID uint32) IConnection {
 		MsgChan: make(chan []byte),
 		ConnID: connID,
 		isClosed: false,
+		property: make(map[string]interface{}),
 	}
 
 	s.Server.GetConnMgr().AddConn(s)
@@ -78,6 +79,9 @@ func (c *Connection)Stop() {
 		return
 	}
 	c.isClosed = true
+
+	// 执行Hook函数
+	c.Server.CallOnConnStop(c)
 
 	// 关闭写进程
 	c.ExitChan<-true

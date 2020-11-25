@@ -15,6 +15,10 @@ type IServer interface {
 	GetConnMgr() IConnMgr
 	// 获取消息处理器
 	GetMsgHandler() IMsgHandler
+	// Add链接中断时Hook
+	AddConnStopFunc(func(IConnection))
+	// 执行hook函数
+	CallOnConnStop(connection IConnection)
 }
 
 type Server struct {
@@ -26,12 +30,16 @@ type Server struct {
 	ConnMgr IConnMgr
 	// 消息管理器
 	MsgHandler IMsgHandler
+	// 连接中断Hook
+	ConnStopFunc func(IConnection)
 }
 
 func NewServer() IServer {
 	s := &Server{
 		IP: "0.0.0.0",
 		Port: 7777,
+		ConnMgr: NewConnManager(),
+		MsgHandler: NewMsgManager(),
 	}
 	return s
 }
@@ -43,6 +51,16 @@ func (s *Server)GetConnMgr() IConnMgr {
 // 获取消息处理器
 func (s *Server) GetMsgHandler() IMsgHandler {
 	return s.MsgHandler
+}
+
+func (s *Server)AddConnStopFunc(connFunc func(IConnection)) {
+	s.ConnStopFunc = connFunc
+}
+
+func (s *Server)CallOnConnStop(connection IConnection) {
+	if s.ConnStopFunc != nil {
+		s.ConnStopFunc(connection)
+	}
 }
 
 // 启动服务器
