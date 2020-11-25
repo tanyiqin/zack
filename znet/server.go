@@ -15,6 +15,8 @@ type IServer interface {
 	GetConnMgr() IConnMgr
 	// 获取消息处理器
 	GetMsgHandler() IMsgHandler
+	// 添加router
+	AddRouter(msgID uint32, handleFunc HandleFunc)
 	// Add链接中断时Hook
 	AddConnStopFunc(func(IConnection))
 	// 执行hook函数
@@ -61,6 +63,11 @@ func (s *Server)CallOnConnStop(connection IConnection) {
 	if s.ConnStopFunc != nil {
 		s.ConnStopFunc(connection)
 	}
+}
+
+// 添加Router
+func (s *Server)AddRouter(msgID uint32, handleFunc HandleFunc) {
+	s.MsgHandler.AddRouter(msgID, handleFunc)
 }
 
 // 启动服务器

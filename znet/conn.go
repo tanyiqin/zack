@@ -108,36 +108,44 @@ func (c *Connection)StartReader() {
 	fmt.Println("Conn Reader begin connid=", c.GetConnID())
 
 	for {
-		headData := make([]byte, HeadLen)
-
-		// 读取头部8字节内容 消息长度+消息ID
-		_, err := io.ReadFull(c.Conn, headData)
+		msg, err := ReadFromConn(c.Conn)
 		if err != nil {
-			fmt.Println("read msg head err", err)
 			return
 		}
-
-		msg, err := UnPack(headData)
-		if err != nil {
-			fmt.Println("unpack err", err)
-			return
-		}
-
-		// 根据头部提供的长度 读取data信息
-		var data []byte
-		if msg.GetDataLen() > 0 {
-			data = make([]byte, msg.GetDataLen())
-			if _, err := io.ReadFull(c.Conn, data); err != nil {
-				fmt.Println("read msg err", err)
-				return
-			}
-		}
-		msg.SetMsgData(data)
 
 		// 当前处理 逻辑 使用同步数据的方式 保证数据顺序的有序
 
 		c.Server.GetMsgHandler().DoMsgRouter(&Request{Msg: msg, Conn: c})
 	}
+}
+
+func ReadFromConn(Conn net.Conn) (IMessage, error){
+	headData := make([]byte, HeadLen)
+
+	// 读取头部8字节内容 消息长度+消息ID
+	_, err := io.ReadFull(Conn, headData)
+	if err != nil {
+		fmt.Println("read msg head err", err)
+		return nil, err
+	}
+
+	msg, err := UnPack(headData)
+	if err != nil {
+		fmt.Println("unpack err", err)
+		return nil, err
+	}
+
+	// 根据头部提供的长度 读取data信息
+	var data []byte
+	if msg.GetDataLen() > 0 {
+		data = make([]byte, msg.GetDataLen())
+		if _, err := io.ReadFull(Conn, data); err != nil {
+			fmt.Println("read msg err", err)
+			return nil, err
+		}
+	}
+	msg.SetMsgData(data)
+	return msg, nil
 }
 
 // 启动写逻辑
