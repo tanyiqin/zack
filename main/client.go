@@ -14,7 +14,7 @@ func main() {
 		fmt.Println("conn err,", err)
 		return
 	}
-	msg := &pb.AccountLogin{RoleID: 123456, PassWord: "ass11www"}
+	msg := &pb.CsAccountLogin{RoleID: 123456, PassWord: "ass11www"}
 	data, err := proto.Marshal(msg)
 	if err != nil {
 		fmt.Println("proto marshal err", err)
@@ -35,7 +35,7 @@ func main() {
 
 	msg2, _ := znet.ReadFromConn(conn)
 
-	result1 := &pb.AccountLoginResult{}
+	result1 := &pb.ScAccountLoginResult{}
 	proto.Unmarshal(msg2.GetMsgData(), result1)
 
 	fmt.Println("return result=", result1.Result)

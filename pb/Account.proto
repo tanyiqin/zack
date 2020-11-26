@@ -1,11 +1,13 @@
 syntax = "proto3";
 package pb;
 
-message AccountLogin {
+//1
+message CsAccountLogin {
   uint32 RoleID = 1;
   string PassWord = 2;
 }
 
-message AccountLoginResult {
+//2
+message ScAccountLoginResult {
   uint32 Result = 1; // 1-成功 2-失败
 }

@@ -73,6 +73,7 @@ func (s *Server)AddRouter(msgID uint32, handleFunc HandleFunc) {
 // 启动服务器
 func (s *Server)Start() {
 	listen, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.IP, s.Port))
+	defer listen.Close()
 
 	if err != nil {
 		fmt.Println("listen error = ", err)
@@ -82,7 +83,6 @@ func (s *Server)Start() {
 	// 唯一ID  这个后续考虑改成用mongo数据库的自增键
 	var cid uint32 = 0
 	for {
-		// 这里后续改成连接池处理
 		conn, err := listen.Accept()
 		if err != nil {
 			fmt.Println("Accept err = ", err)

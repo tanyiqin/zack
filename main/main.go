@@ -12,11 +12,13 @@ func StopFunc(znet.IConnection) {
 	fmt.Println("stopFunc ....")
 }
 
+
+
 func main() {
 	s := znet.NewServer()
 
 	// 添加Router
-	s.AddRouter(1, router.AccountLogin)
+	s.AddRouter(1, router.CsAccountLogin)
 
 	// 添加链接中断前执行的操作 一般为保存玩家数据
 	s.AddConnStopFunc(StopFunc)

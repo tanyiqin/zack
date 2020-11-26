@@ -1,0 +1,18 @@
+syntax = "proto3";
+package pb;
+
+message CsPlayerCreate {
+  string name = 1;
+}
+
+message ScPlayerCreateResult {
+  uint32 Result = 1;
+}
+
+message CsPlayerInfo {
+
+}
+
+message ScPlayerInfo {
+  string name = 1;
+}
