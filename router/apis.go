@@ -3,6 +3,7 @@ package router
 import (
 	"fmt"
 	"github.com/golang/protobuf/proto"
+	log "github.com/tanyiqin/zack/logger"
 	"github.com/tanyiqin/zack/model"
 	"github.com/tanyiqin/zack/pb"
 	"github.com/tanyiqin/zack/znet"
@@ -13,7 +14,7 @@ func CsAccountLogin(request znet.IRequest) {
 	msg := &pb.CsAccountLogin{}
 	err := proto.Unmarshal(request.GetMsg().GetMsgData(), msg)
 	if err != nil {
-		fmt.Println("proto unmarshal error", err)
+		log.Error("proto unmarshal error", err)
 		return
 	}
 	// 这边肯定去mongo数据库去验证 是否有改角色
@@ -31,7 +32,7 @@ func CsPlayerCreate(request znet.IRequest) {
 	msg := &pb.CsPlayerCreate{}
 	err := proto.Unmarshal(request.GetMsg().GetMsgData(), msg)
 	if err != nil {
-		fmt.Println("proto unmarshal error", err)
+		log.Error("proto unmarshal error", err)
 		return
 	}
 

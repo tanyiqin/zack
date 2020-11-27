@@ -1,6 +1,8 @@
 package znet
 
-import "fmt"
+import (
+	log "github.com/tanyiqin/zack/logger"
+)
 
 // 消息处理模块 目前为同步执行
 
@@ -11,7 +13,7 @@ type IMsgHandler interface {
 	// 添加路由消息
 	AddRouter(msgID uint32, handleFunc HandleFunc)
 	// 执行路由消息
-	DoMsgRouter(rquest IRequest)
+	DoMsgRouter(request IRequest)
 }
 
 type MsgHandler struct {
@@ -28,7 +30,7 @@ func NewMsgManager() IMsgHandler{
 // 添加路由消息
 func (mh *MsgHandler)AddRouter(msgID uint32, handleFunc HandleFunc) {
 	if _, ok := mh.RouterMap[msgID]; ok {
-		fmt.Println("warning dup router")
+		log.Debug("warning dump router")
 	}
 	mh.RouterMap[msgID] = handleFunc
 }
@@ -37,7 +39,7 @@ func (mh *MsgHandler)AddRouter(msgID uint32, handleFunc HandleFunc) {
 func (mh *MsgHandler) DoMsgRouter(request IRequest) {
 	handFunc, ok := mh.RouterMap[request.GetMsg().GetMsgID()]
 	if !ok {
-		fmt.Println("no right msgid=", request.GetMsg().GetMsgID())
+		log.Error("Wrong msgID ", request.GetMsg().GetMsgID())
 		return
 	}
 

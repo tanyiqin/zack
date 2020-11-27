@@ -2,8 +2,8 @@ package znet
 
 import (
 	"errors"
-	"fmt"
 	"github.com/golang/protobuf/proto"
+	log "github.com/tanyiqin/zack/logger"
 	"io"
 	"net"
 	"sync"
@@ -87,7 +87,6 @@ func (c *Connection)Stop() {
 	c.ExitChan<-true
 
 	// 关闭套接字
-	fmt.Println("conn close")
 	c.Conn.Close()
 
 	c.Server.GetConnMgr().Stop()
@@ -104,8 +103,6 @@ func (c *Connection)GetConnID() uint32{
 // 启动读逻辑
 func (c *Connection)StartReader() {
 	defer c.Stop()
-
-	fmt.Println("Conn Reader begin connid=", c.GetConnID())
 
 	for {
 		msg, err := ReadFromConn(c.Conn)
@@ -125,13 +122,13 @@ func ReadFromConn(Conn net.Conn) (IMessage, error){
 	// 读取头部8字节内容 消息长度+消息ID
 	_, err := io.ReadFull(Conn, headData)
 	if err != nil {
-		fmt.Println("read msg head err", err)
+		log.Error("read head error ", err)
 		return nil, err
 	}
 
 	msg, err := UnPack(headData)
 	if err != nil {
-		fmt.Println("unpack err", err)
+		log.Error("unpack error", err)
 		return nil, err
 	}
 
@@ -140,7 +137,7 @@ func ReadFromConn(Conn net.Conn) (IMessage, error){
 	if msg.GetDataLen() > 0 {
 		data = make([]byte, msg.GetDataLen())
 		if _, err := io.ReadFull(Conn, data); err != nil {
-			fmt.Println("read msg err", err)
+			log.Error("read data error", err)
 			return nil, err
 		}
 	}
@@ -152,12 +149,11 @@ func ReadFromConn(Conn net.Conn) (IMessage, error){
 // ！！这里如果写失败 把连接给中断掉
 func (c *Connection)StartWriter() {
 	defer c.Stop()
-	fmt.Println("Conn Writer begin connid=", c.GetConnID())
 	for {
 		select {
 		case data := <-c.MsgChan:
 			if _, err := c.Conn.Write(data); err != nil {
-				fmt.Println("write err", err)
+				log.Error("Conn write error", err)
 				return
 			}
 		case <-c.ExitChan:
@@ -170,7 +166,7 @@ func (c *Connection)StartWriter() {
 func (c *Connection)SendMsg(msgID uint32, message proto.Message) {
 	data, err := proto.Marshal(message)
 	if err != nil {
-		fmt.Println("proto marshal err,", err)
+		log.Error("proto marshal error", err)
 		return
 	}
 
@@ -180,14 +176,12 @@ func (c *Connection)SendMsg(msgID uint32, message proto.Message) {
 }
 func (c *Connection)SendRawMsg(msgID uint32, data []byte) error {
 	if c.isClosed {
-		fmt.Println("conn already closed")
 		return errors.New("conn already closed")
 	}
 
 	msg, err := Pack(NewMessage(msgID, data))
 
 	if err != nil {
-		fmt.Println("pack err = ", err)
 		return errors.New("pack error msg")
 	}
 

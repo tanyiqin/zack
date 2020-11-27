@@ -1,0 +1,4 @@
+pb/*.pb.go
+go.sum
+.idea/
+*.exe

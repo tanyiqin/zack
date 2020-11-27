@@ -2,6 +2,7 @@ package znet
 
 import (
 	"fmt"
+	"github.com/tanyiqin/zack/logger"
 	"net"
 )
 
@@ -76,7 +77,7 @@ func (s *Server)Start() {
 	defer listen.Close()
 
 	if err != nil {
-		fmt.Println("listen error = ", err)
+		log.Fatal("Listen error", err)
 		return
 	}
 
@@ -85,7 +86,7 @@ func (s *Server)Start() {
 	for {
 		conn, err := listen.Accept()
 		if err != nil {
-			fmt.Println("Accept err = ", err)
+			log.Error("Accept error", err)
 			continue
 		}
 

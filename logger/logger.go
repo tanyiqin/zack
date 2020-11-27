@@ -1,4 +1,4 @@
-package logger
+package log
 
 import (
 	"fmt"
@@ -6,12 +6,6 @@ import (
 	"os"
 	"time"
 )
-
-var Log *Logger
-
-func init () {
-	Log, _ = New(levelDebug)
-}
 
 const (
 	levelDebug = iota
@@ -69,4 +63,22 @@ func (logger *Logger) Error(format string, v ...interface{}) {
 
 func (logger *Logger) Fatal(format string, v ...interface{}) {
 	logger.Print(levelFatal, printFatal, format, v...)
+}
+
+var gLoger *Logger
+
+func init() {
+	gLoger, _ = New(levelDebug)
+}
+
+func Debug (format string, v ...interface{}) {
+	gLoger.Debug(format, v...)
+}
+
+func Error (format string, v ...interface{}) {
+	gLoger.Error(format, v...)
+}
+
+func Fatal (format string, v ...interface{}) {
+	gLoger.Fatal(format, v...)
 }
