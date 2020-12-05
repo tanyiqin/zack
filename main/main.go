@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	mdb "github.com/tanyiqin/zack/db"
 	"github.com/tanyiqin/zack/router"
 	"github.com/tanyiqin/zack/znet"
 	"os"
@@ -19,6 +20,7 @@ func main() {
 
 	// 添加Router
 	s.AddRouter(1, router.CsAccountLogin)
+	s.AddRouter(2, router.CsPlayerCreate)
 
 	// 添加链接中断前执行的操作 一般为保存玩家数据
 	s.AddConnStopFunc(StopFunc)
@@ -32,5 +34,6 @@ func main() {
 	sig := <-c
 
 	fmt.Println("server stop with sig=", sig)
+	mdb.DB.StopMongoDB()
 	s.GetConnMgr().Stop()
 }

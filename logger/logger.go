@@ -27,7 +27,7 @@ type Logger struct {
 
 func New(logLevel int) (*Logger, error){
 	now := time.Now()
-	fileName := fmt.Sprintf("log/%v_%v/%v_%v:%v", now.Year(), now.Month(), now.Day(), now.Hour(), now.Second())
+	fileName := fmt.Sprintf("log/%v_%v_%v_%v", now.Year(), now.Month(), now.Day(), now.Hour())
 	logFile, err := os.Create(fileName)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,12 @@ func (logger *Logger) Fatal(format string, v ...interface{}) {
 var gLoger *Logger
 
 func init() {
-	gLoger, _ = New(levelDebug)
+	var err error
+	gLoger, err = New(levelDebug)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func Debug (format string, v ...interface{}) {

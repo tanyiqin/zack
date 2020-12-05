@@ -121,6 +121,9 @@ func ReadFromConn(Conn net.Conn) (IMessage, error){
 
 	// 读取头部8字节内容 消息长度+消息ID
 	_, err := io.ReadFull(Conn, headData)
+	if err == io.EOF {
+		return nil, err
+	}
 	if err != nil {
 		log.Error("read head error ", err)
 		return nil, err

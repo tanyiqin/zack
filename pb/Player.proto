@@ -2,7 +2,7 @@ syntax = "proto3";
 package pb;
 
 message CsPlayerCreate {
-  string name = 1;
+  string Name = 1;
 }
 
 message ScPlayerCreateResult {
@@ -10,9 +10,9 @@ message ScPlayerCreateResult {
 }
 
 message CsPlayerInfo {
-
 }
 
 message ScPlayerInfo {
-  string name = 1;
+  string Name = 1;
+  uint32 RoleID = 2;
 }

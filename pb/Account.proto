@@ -4,7 +4,6 @@ package pb;
 //1
 message CsAccountLogin {
   uint32 RoleID = 1;
-  string PassWord = 2;
 }
 
 //2

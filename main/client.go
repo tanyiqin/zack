@@ -14,30 +14,41 @@ func main() {
 		fmt.Println("conn err,", err)
 		return
 	}
-	msg := &pb.CsAccountLogin{RoleID: 123456, PassWord: "ass11www"}
-	data, err := proto.Marshal(msg)
-	if err != nil {
-		fmt.Println("proto marshal err", err)
-		return
-	}
-
-	msg1, err := znet.Pack(znet.NewMessage(1, data))
-	if err != nil {
-		fmt.Println("pack err", err)
-		return
-	}
-
+	// 注册
+	msg := &pb.CsPlayerCreate{Name: "wewe"}
+	data, _ := proto.Marshal(msg)
+	msg1, err := znet.Pack(znet.NewMessage(2, data))
 	_, err = conn.Write(msg1)
-	if err != nil {
-		fmt.Println("write err", err)
-		return
-	}
-
 	msg2, _ := znet.ReadFromConn(conn)
-
-	result1 := &pb.ScAccountLoginResult{}
+	result1 := &pb.ScPlayerCreateResult{}
 	proto.Unmarshal(msg2.GetMsgData(), result1)
+	fmt.Println(result1.Result)
 
-	fmt.Println("return result=", result1.Result)
+	// 登录
+	//msg := &pb.CsAccountLogin{RoleID: 123456}
+	//data, err := proto.Marshal(msg)
+	//if err != nil {
+	//	fmt.Println("proto marshal err", err)
+	//	return
+	//}
+	//
+	//msg1, err := znet.Pack(znet.NewMessage(1, data))
+	//if err != nil {
+	//	fmt.Println("pack err", err)
+	//	return
+	//}
+	//
+	//_, err = conn.Write(msg1)
+	//if err != nil {
+	//	fmt.Println("write err", err)
+	//	return
+	//}
+	//
+	//msg2, _ := znet.ReadFromConn(conn)
+	//
+	//result1 := &pb.ScAccountLoginResult{}
+	//proto.Unmarshal(msg2.GetMsgData(), result1)
+	//
+	//fmt.Println("return result=", result1.Result)
 
 }
