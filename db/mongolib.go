@@ -3,9 +3,9 @@ package mdb
 import (
 	"context"
 	log "github.com/tanyiqin/zack/logger"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 type MongoDB struct {
@@ -15,13 +15,25 @@ type MongoDB struct {
 	ctx context.Context
 }
 
-var DB *MongoDB
+var Mdb *MongoDB
 
 func init() {
 	var err error
-	DB, err = NewMongoDB()
+	Mdb, err = NewMongoDB()
 	if err != nil {
 		log.Fatal("error connect mongodb")
+	}
+	// 建立索引
+	index := []mongo.IndexModel{
+		{
+			Keys:bson.D{{"name","1"}},
+			Options: options.Index().SetUnique(true),
+		},
+	}
+	opts := options.CreateIndexes().SetCommitQuorumMajority()
+	_, err = Mdb.DB.Collection("g_role").Indexes().CreateMany(Mdb.ctx,index,opts)
+	if err != nil {
+		log.Fatal("error in createindex")
 	}
 }
 
@@ -29,17 +41,17 @@ func NewMongoDB() (*MongoDB, error){
 	ctx, cancel := context.WithCancel(context.Background())
 
 	var err error
-	//Client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://192.168.50.106:28017" +
-	//	",192.168.50.106:28018,192.168.50.106:28019/?replicaSet=rs0"))
-	Client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://127.0.0.1:27017").SetServerSelectionTimeout(5*time.Second))
+	Client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://192.168.50.106:28017" +
+		",192.168.50.106:28018,192.168.50.106:28019/?replicaSet=rs0"))
+	//Client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://127.0.0.1:27017").SetServerSelectionTimeout(5*time.Second))
 	if err != nil {
 		return nil, err
 	}
-	DB := Client.Database("game_server1")
+	db := Client.Database("game_server1")
 	return &MongoDB{
 		ConCancel: cancel,
 		Client: Client,
-		DB: DB,
+		DB: db,
 		ctx: ctx,
 	}, nil
 }

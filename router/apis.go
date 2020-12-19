@@ -20,7 +20,7 @@ func CsAccountLogin(request znet.IRequest) {
 		return
 	}
 	// 这边去mongo数据库去验证 是否有该角色
-	findResult := mdb.DB.FindOne("g_role", bson.M{"_id":msg.RoleID})
+	findResult := mdb.Mdb.FindOne("g_role", bson.M{"_id":msg.RoleID})
 	var p model.Player
 	err = findResult.Decode(&p)
 	if err != nil {
@@ -43,7 +43,7 @@ func CsPlayerCreate(request znet.IRequest) {
 		return
 	}
 
-	// 这里要到数据库去创角
+	// 这里到数据库去创角
 	player := model.NewPlayer(request.GetConn(), msg.Name)
 	data, err := bson.Marshal(player)
 	if err != nil {
@@ -51,7 +51,7 @@ func CsPlayerCreate(request znet.IRequest) {
 		msgReturn.Result = 2
 		return
 	}
-	_, err = mdb.DB.InsertOne("g_role", data)
+	_, err = mdb.Mdb.InsertOne("g_role", data)
 	if err != nil {
 		log.Error("mongo createRole err", err)
 		msgReturn.Result = 2

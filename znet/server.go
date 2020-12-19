@@ -6,7 +6,6 @@ import (
 	"net"
 )
 
-// 一切的起点
 type IServer interface {
 	// 启动服务器
 	Start()
@@ -22,6 +21,13 @@ type IServer interface {
 	AddConnStopFunc(func(IConnection))
 	// 执行hook函数
 	CallOnConnStop(connection IConnection)
+	// Add链接开始时Hook
+	AddConnStartFunc(func(connection IConnection))
+	//
+	CallOnConnStart(connection IConnection)
+	// Server开始结束执行函数
+	AddServerStartFunc(func())
+	AddServerStopFunc(func())
 }
 
 type Server struct {
@@ -35,6 +41,10 @@ type Server struct {
 	MsgHandler IMsgHandler
 	// 连接中断Hook
 	ConnStopFunc func(IConnection)
+	//
+	ConnStartFunc func(IConnection)
+	ServerStartFunc func()
+	ServerStopFunc func()
 }
 
 func NewServer() IServer {
@@ -66,6 +76,25 @@ func (s *Server)CallOnConnStop(connection IConnection) {
 	}
 }
 
+// Add链接开始时Hook
+func (s *Server) AddConnStartFunc(connFunc func(connection IConnection)) {
+	s.ConnStartFunc = connFunc
+}
+//
+func (s *Server) CallOnConnStart(connection IConnection) {
+	if s.ConnStartFunc != nil {
+		s.ConnStartFunc(connection)
+	}
+}
+
+// Server开始结束执行函数
+func (s *Server)AddServerStartFunc(f func()) {
+	s.ServerStartFunc = f
+}
+func (s *Server)AddServerStopFunc(f func()) {
+	s.ServerStopFunc = f
+}
+
 // 添加Router
 func (s *Server)AddRouter(msgID uint32, handleFunc HandleFunc) {
 	s.MsgHandler.AddRouter(msgID, handleFunc)
@@ -73,6 +102,10 @@ func (s *Server)AddRouter(msgID uint32, handleFunc HandleFunc) {
 
 // 启动服务器
 func (s *Server)Start() {
+	if s.ServerStartFunc != nil {
+		s.ServerStartFunc()
+	}
+
 	listen, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.IP, s.Port))
 	defer listen.Close()
 
@@ -99,7 +132,9 @@ func (s *Server)Start() {
 
 // 关闭服务器
 func (s *Server)Stop() {
-
+	if s.ServerStopFunc != nil {
+		s.ServerStopFunc()
+	}
 	// 移除所有管理器
 	s.ConnMgr.Stop()
 }

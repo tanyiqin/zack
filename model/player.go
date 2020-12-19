@@ -7,7 +7,7 @@ import (
 
 type Player struct {
 	Conn znet.IConnection `bson:"-"`
-	RoleID uint32
+	RoleID uint32 `bson:"_id"`
 	Name string
 }
 

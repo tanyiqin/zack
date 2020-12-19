@@ -1,21 +1,26 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	mdb "github.com/tanyiqin/zack/db"
 	"github.com/tanyiqin/zack/router"
 	"github.com/tanyiqin/zack/znet"
 	"os"
 	"os/signal"
+	"runtime"
 )
 
 func StopFunc(znet.IConnection) {
 	fmt.Println("stopFunc ....")
 }
 
-
+var numCores = flag.Int("n", 2, "number of CPU cores to use")
 
 func main() {
+	flag.Parse()
+	runtime.GOMAXPROCS(*numCores)
+
 	s := znet.NewServer()
 
 	// 添加Router
@@ -34,6 +39,6 @@ func main() {
 	sig := <-c
 
 	fmt.Println("server stop with sig=", sig)
-	mdb.DB.StopMongoDB()
+	mdb.Mdb.StopMongoDB()
 	s.GetConnMgr().Stop()
 }

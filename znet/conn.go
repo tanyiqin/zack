@@ -1,6 +1,7 @@
 package znet
 
 import (
+	"context"
 	"errors"
 	"github.com/golang/protobuf/proto"
 	log "github.com/tanyiqin/zack/logger"
@@ -36,8 +37,9 @@ type Connection struct {
 	Server IServer
 	// 链接套接字
 	Conn net.Conn
-	// 关闭chan
-	ExitChan chan bool
+	// ctx
+	ctx context.Context
+	canFunc context.CancelFunc
 	// 消息传输读，写 协程通讯chan
 	MsgChan chan []byte
 	// 链接ID 唯一
@@ -51,10 +53,12 @@ type Connection struct {
 }
 
 func NewConnection(server IServer, conn net.Conn, connID uint32) IConnection {
+	ctx, canFunc := context.WithCancel(context.Background())
 	s := &Connection{
 		Server: server,
 		Conn: conn,
-		ExitChan: make(chan bool),
+		ctx: ctx,
+		canFunc: canFunc,
 		MsgChan: make(chan []byte),
 		ConnID: connID,
 		isClosed: false,
@@ -69,6 +73,7 @@ func NewConnection(server IServer, conn net.Conn, connID uint32) IConnection {
 func (c *Connection)Start() {
 	go c.StartReader()
 	go c.StartWriter()
+	c.Server.CallOnConnStart(c)
 }
 
 // 关闭连接
@@ -84,7 +89,7 @@ func (c *Connection)Stop() {
 	c.Server.CallOnConnStop(c)
 
 	// 关闭写进程
-	c.ExitChan<-true
+	c.canFunc()
 
 	// 关闭套接字
 	c.Conn.Close()
@@ -92,7 +97,6 @@ func (c *Connection)Stop() {
 	c.Server.GetConnMgr().Stop()
 
 	// 关闭管道
-	close(c.ExitChan)
 	close(c.MsgChan)
 }
 
@@ -159,7 +163,7 @@ func (c *Connection)StartWriter() {
 				log.Error("Conn write error", err)
 				return
 			}
-		case <-c.ExitChan:
+		case <-c.ctx.Done():
 			return
 		}
 	}
